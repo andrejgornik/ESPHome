@@ -8,18 +8,8 @@ namespace uart_centralna {
 class MyCustomUARTComponent : public uart::UARTDevice, public Component {
  public:
   void setup() override {}
-  void loop() override {
-    while (available()) {
-      char c = read();
-      buffer_ += c;
-
-      if (c == '\n') {
-        ESP_LOGD("uart_centralna", "Received: %s", buffer_.c_str());
-        buffer_.clear();
-      }
-    }
-  }
-  void dump_config() override { ESP_LOGCONFIG(TAG, "UART Centralna Component"); }
+  void loop() override;
+  void dump_config() override;  // Declaration only
 
  protected:
   std::string buffer_;
