@@ -7,13 +7,14 @@ from esphome.const import CONF_ID
 uart_centralna_ns = cg.esphome_ns.namespace('uart_centralna')
 MyCustomUARTComponent = uart_centralna_ns.class_('MyCustomUARTComponent', cg.Component, uart.UARTDevice)
 
-# Define configuration schema
+# Configuration schema
 CONFIG_SCHEMA = uart.UART_DEVICE_SCHEMA.extend({
     cv.GenerateID(): cv.declare_id(MyCustomUARTComponent),
 })
 
 # Register the component
 async def to_code(config):
+    # Create a new Pvariable
     var = cg.new_Pvariable(config[CONF_ID], cg.global_ns.UARTComponent)
     await cg.register_component(var, config)
     await uart.register_uart_device(var, config)
