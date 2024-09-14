@@ -4,4 +4,4 @@ namespace uart_centralna {
 
 // Implement any additional methods here if needed
 
-}  // namespace uart_centralna
+}  // namespace uart_centralna 
