@@ -1,12 +1,13 @@
-#include "esphome/components/uart/uart.h"
+#pragma once
 #include "esphome/core/component.h"
+#include "esphome/components/uart/uart.h"
 
+namespace esphome {
 namespace uart_centralna {
 
-class MyCustomUARTComponent : public esphome::Component, public esphome::uart::UARTDevice {
+class MyCustomUARTComponent : public uart::UARTDevice, public Component {
  public:
-  MyCustomUARTComponent(esphome::uart::UARTComponent *parent) : esphome::uart::UARTDevice(parent) {}
-
+  void setup() override {}
   void loop() override {
     while (available()) {
       char c = read();
@@ -18,9 +19,11 @@ class MyCustomUARTComponent : public esphome::Component, public esphome::uart::U
       }
     }
   }
+  void dump_config() override { ESP_LOGCONFIG(TAG, "UART Centralna Component"); }
 
  protected:
   std::string buffer_;
 };
 
 }  // namespace uart_centralna
+}  // namespace esphome
