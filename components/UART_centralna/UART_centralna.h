@@ -1,19 +1,26 @@
-#include "esphome.h"
+#include "esphome/components/uart/uart.h"
+#include "esphome/core/component.h"
 
-class MyCustomComponent : public Component, public UARTDevice {
+namespace uart_centralna {  // Use the matching namespace
+
+class MyCustomUARTComponent : public esphome::Component, public esphome::uart::UARTDevice {
  public:
-  MyCustomComponent(UARTComponent *parent) : UARTDevice(parent) {}
+  MyCustomUARTComponent(esphome::uart::UARTComponent *parent) : esphome::uart::UARTDevice(parent) {}
 
-  void setup() override {
-    // nothing to do here
-  }
   void loop() override {
-    // Use Arduino API to read data, for example
-    String line = readString();
-    int i = parseInt();
     while (available()) {
       char c = read();
+      buffer_ += c;
+
+      if (c == '\n') {
+        ESP_LOGD("uart_centralna", "Received: %s", buffer_.c_str());
+        buffer_.clear();
+      }
     }
-    // etc
   }
+
+ protected:
+  std::string buffer_;
 };
+
+}  // namespace uart_centralna
