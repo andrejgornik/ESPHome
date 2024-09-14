@@ -1,9 +1,9 @@
 #include "esphome.h"
 
-namespace CustomUART {
-  class MyUARTComponent : public Component, public UARTDevice {
+namespace UART_centralna {  // Namespace definition
+  class MyCustomUARTComponent : public Component, public UARTDevice {
   public:
-    MyUARTComponent(UARTComponent *parent) : UARTDevice(parent) {}
+    MyCustomUARTComponent(UARTComponent *parent) : UARTDevice(parent) {}
 
     void loop() override {
       while (available()) {
@@ -20,4 +20,4 @@ namespace CustomUART {
   protected:
     std::string buffer_;
   };
-}  // namespace CustomUART
+}  // namespace UART_centralna
