@@ -1,7 +1,7 @@
 #include "esphome/components/uart/uart.h"
 #include "esphome/core/component.h"
 
-namespace uart_centralna {  // Use the matching namespace
+namespace uart_centralna {
 
 class MyCustomUARTComponent : public esphome::Component, public esphome::uart::UARTDevice {
  public:
