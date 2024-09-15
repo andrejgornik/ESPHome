@@ -59,3 +59,4 @@ void MyCustomUARTComponent::send_command(float desired_temp, float pid_power, bo
 
 }  // namespace uart_centralna
 }  // namespace esphome
+ 
