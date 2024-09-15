@@ -15,9 +15,10 @@ void MyCustomUARTComponent::loop() {
 
     if (c == '\n') {
       ESP_LOGD(TAG, "Received: %s", buffer_.c_str());
-      // Parse the buffer here
+      // Check for leading '#' character and remove it
       if (buffer_.front() == '#') {
         std::string json_str = buffer_.substr(1);  // Remove the '#' character
+
         // Parse JSON
         DynamicJsonDocument json_doc(1024);
         auto error = deserializeJson(json_doc, json_str);
@@ -30,12 +31,14 @@ void MyCustomUARTComponent::loop() {
             const char *name = sensor->get_name().c_str();
             if (root.containsKey(name)) {
               auto value = root[name];
+              // Publish the sensor state (converted to a string)
               sensor->publish_state(value.as<std::string>());
+              ESP_LOGD(TAG, "Published sensor: %s -> %s", name, value.as<std::string>().c_str());
             }
           }
         }
       }
-      buffer_.clear();
+      buffer_.clear();  // Clear buffer for the next message
     }
   }
 }
@@ -53,7 +56,7 @@ void MyCustomUARTComponent::send_command(float desired_temp, float pid_power, bo
            desired_temp, pid_power, on_off_text.c_str());
 
   // Send over UART
-  this->write_str("#");
+  this->write_str("#");  // Add '#' to the beginning of the message if required by the receiving system
   this->write_str(send_json);
   this->write_str("\n");
 
