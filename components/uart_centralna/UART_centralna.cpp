@@ -1,7 +1,8 @@
+// UART_centralna.cpp
 #include "esphome/core/log.h"
 #include "UART_centralna.h"
 #include "esphome/components/json/json_util.h"
-#include <ArduinoJson.h>  // Include ArduinoJson
+#include "ArduinoJson.h"
 
 namespace esphome {
 namespace uart_centralna {
@@ -15,55 +16,25 @@ void MyCustomUARTComponent::loop() {
 
     if (c == '\n') {
       ESP_LOGD(TAG, "Received: %s", buffer_.c_str());
-
-      // Check if the message has a leading '#' character and remove it
-      std::string json_str;
-      if (buffer_.front() == '#') {
-        json_str = buffer_.substr(1);  // Remove the '#' character
-      } else {
-        json_str = buffer_;  // Use the buffer as is
-      }
-
+      
       // Parse JSON
-      StaticJsonDocument<1024> json_doc;  // Use StaticJsonDocument for memory safety on embedded devices
-      auto error = deserializeJson(json_doc, json_str);
+      DynamicJsonDocument json_doc(1024);
+      auto error = deserializeJson(json_doc, buffer_);
       if (error) {
         ESP_LOGW(TAG, "JSON parsing error: %s", error.c_str());
       } else {
         JsonObject root = json_doc.as<JsonObject>();
-        
-        // Extract values and publish to temperature sensors
-        for (auto *sensor : this->temperature_sensors_) {
+        for (auto *sensor : this->sensors_) {
           const char *name = sensor->get_name().c_str();
           if (root.containsKey(name)) {
             float value = root[name].as<float>();
             sensor->publish_state(value);
-            ESP_LOGD(TAG, "Published temperature sensor: %s -> %f", name, value);
-          }
-        }
-
-        // Extract values and publish to power sensors
-        for (auto *sensor : this->power_sensors_) {
-          const char *name = sensor->get_name().c_str();
-          if (root.containsKey(name)) {
-            float value = root[name].as<float>();
-            sensor->publish_state(value);
-            ESP_LOGD(TAG, "Published power sensor: %s -> %f", name, value);
-          }
-        }
-
-        // Extract values and publish to text sensors
-        for (auto *sensor : this->text_sensors_) {
-          const char *name = sensor->get_name().c_str();
-          if (root.containsKey(name)) {
-            auto value = root[name];
-            sensor->publish_state(value.as<std::string>());
-            ESP_LOGD(TAG, "Published text sensor: %s -> %s", name, value.as<std::string>().c_str());
+            ESP_LOGD(TAG, "Published sensor: %s -> %.2f", name, value);
           }
         }
       }
 
-      buffer_.clear();  // Clear buffer for the next message
+      buffer_.clear();
     }
   }
 }
