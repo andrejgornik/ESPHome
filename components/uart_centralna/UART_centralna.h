@@ -2,7 +2,6 @@
 #include "esphome/core/component.h"
 #include "esphome/components/uart/uart.h"
 #include "esphome/components/text_sensor/text_sensor.h"
-#include <vector>
 
 namespace esphome {
 namespace uart_centralna {
@@ -15,11 +14,10 @@ class MyCustomUARTComponent : public uart::UARTDevice, public Component {
   void loop() override;
   void dump_config() override;
 
-  // Method to create and return text sensors
   text_sensor::TextSensor *create_text_sensor(const std::string &name) {
     auto *sensor = new text_sensor::TextSensor();
     sensor->set_name(name.c_str());
-    this->text_sensors_.push_back(sensor);
+    text_sensors_.push_back(sensor);
     return sensor;
   }
 
