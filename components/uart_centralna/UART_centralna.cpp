@@ -1,7 +1,7 @@
 // UART_centralna.cpp
 #include "esphome/core/log.h"
 #include "UART_centralna.h"
-#include "esphome/json_util.h"  // Corrected include path
+#include "esphome/components/json/json_util.h"
 #include "ArduinoJson.h"
 
 namespace esphome {
