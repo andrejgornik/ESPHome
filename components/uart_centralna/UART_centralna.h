@@ -1,9 +1,10 @@
-#pragma once
+#pragma once  // Use #pragma once to prevent multiple inclusions
+
 #include "esphome/core/component.h"
 #include "esphome/components/uart/uart.h"
 #include "esphome/components/sensor/sensor.h"
 #include "esphome/components/text_sensor/text_sensor.h"
-#include "esphome/components/json/json_util.h"
+#include <ArduinoJson.h>  // Include ArduinoJson
 
 namespace esphome {
 namespace uart_centralna {
@@ -16,23 +17,21 @@ class MyCustomUARTComponent : public uart::UARTDevice, public Component {
   void loop() override;
   void dump_config() override;
 
-  // Method to create and return temperature sensors
-  esphome::sensor::Sensor *create_temperature_sensor(const std::string &name) {
-    auto *sensor = new esphome::sensor::Sensor();
+  // Methods to create and return sensors
+  sensor::Sensor *create_temperature_sensor(const std::string &name) {
+    auto *sensor = new sensor::Sensor();
     sensor->set_name(name.c_str());
     temperature_sensors_.push_back(sensor);
     return sensor;
   }
 
-  // Method to create and return power sensors
-  esphome::sensor::Sensor *create_power_sensor(const std::string &name) {
-    auto *sensor = new esphome::sensor::Sensor();
+  sensor::Sensor *create_power_sensor(const std::string &name) {
+    auto *sensor = new sensor::Sensor();
     sensor->set_name(name.c_str());
     power_sensors_.push_back(sensor);
     return sensor;
   }
 
-  // Method to create and return text sensors
   esphome::text_sensor::TextSensor *create_text_sensor(const std::string &name) {
     auto *sensor = new esphome::text_sensor::TextSensor();
     sensor->set_name(name.c_str());
@@ -45,8 +44,8 @@ class MyCustomUARTComponent : public uart::UARTDevice, public Component {
 
  protected:
   std::string buffer_;
-  std::vector<esphome::sensor::Sensor *> temperature_sensors_;
-  std::vector<esphome::sensor::Sensor *> power_sensors_;
+  std::vector<sensor::Sensor *> temperature_sensors_;
+  std::vector<sensor::Sensor *> power_sensors_;
   std::vector<esphome::text_sensor::TextSensor *> text_sensors_;
 };
 

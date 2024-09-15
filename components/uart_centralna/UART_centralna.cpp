@@ -1,7 +1,7 @@
 #include "esphome/core/log.h"
 #include "UART_centralna.h"
 #include "esphome/components/json/json_util.h"
-#include <ArduinoJson.h>  // Use the correct path to include ArduinoJson
+#include <ArduinoJson.h>  // Include ArduinoJson
 
 namespace esphome {
 namespace uart_centralna {
@@ -15,6 +15,7 @@ void MyCustomUARTComponent::loop() {
 
     if (c == '\n') {
       ESP_LOGD(TAG, "Received: %s", buffer_.c_str());
+
       // Check if the message has a leading '#' character and remove it
       std::string json_str;
       if (buffer_.front() == '#') {
@@ -31,7 +32,7 @@ void MyCustomUARTComponent::loop() {
       } else {
         JsonObject root = json_doc.as<JsonObject>();
         
-        // Extract values and publish to temperature sensors
+        // Extract values and publish to sensors
         for (auto *sensor : this->temperature_sensors_) {
           const char *name = sensor->get_name().c_str();
           if (root.containsKey(name)) {
@@ -41,7 +42,6 @@ void MyCustomUARTComponent::loop() {
           }
         }
 
-        // Extract values and publish to power sensors
         for (auto *sensor : this->power_sensors_) {
           const char *name = sensor->get_name().c_str();
           if (root.containsKey(name)) {
@@ -51,7 +51,6 @@ void MyCustomUARTComponent::loop() {
           }
         }
 
-        // Extract values and publish to text sensors
         for (auto *sensor : this->text_sensors_) {
           const char *name = sensor->get_name().c_str();
           if (root.containsKey(name)) {
