@@ -14,7 +14,7 @@ class MyCustomUARTComponent : public uart::UARTDevice, public Component {
   void setup() override {}
   void loop() override;
   void dump_config() override;
-  
+
   // Method to create and return text sensors
   esphome::text_sensor::TextSensor *create_text_sensor(const std::string &name) {
     auto *sensor = new esphome::text_sensor::TextSensor();
@@ -22,6 +22,9 @@ class MyCustomUARTComponent : public uart::UARTDevice, public Component {
     text_sensors_.push_back(sensor);
     return sensor;
   }
+
+  // Method to send command to the Arduino over UART
+  void send_command(float desired_temp, float pid_power, bool tc_power);
 
  protected:
   std::string buffer_;
