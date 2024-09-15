@@ -1,7 +1,7 @@
 // UART_centralna.cpp
 #include "esphome/core/log.h"
 #include "UART_centralna.h"
-#include "esphome/components/json/json_util.h"
+// #include "esphome/json_util.h"  // Removed
 #include "ArduinoJson.h"
 
 namespace esphome {
@@ -18,7 +18,7 @@ void MyCustomUARTComponent::loop() {
       ESP_LOGD(TAG, "Received: %s", buffer_.c_str());
 
       // Parse JSON
-      DynamicJsonDocument json_doc(2048);  // Increase size if needed
+      DynamicJsonDocument json_doc(2048);  // Adjust size as needed
       auto error = deserializeJson(json_doc, buffer_);
       if (error) {
         ESP_LOGW(TAG, "JSON parsing error: %s", error.c_str());
