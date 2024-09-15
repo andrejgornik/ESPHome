@@ -33,7 +33,7 @@ class MyCustomUARTComponent : public uart::UARTDevice, public Component {
   void loop() override;
   void dump_config() override;
 
-  // Method to create and return sensor objects
+  // Method to create and return sensor objects 
   esphome::sensor::Sensor *create_sensor(const std::string &json_key, const std::string &display_name) {
     auto *sensor = new esphome::sensor::Sensor();
     sensor->set_name(display_name.c_str());

@@ -45,7 +45,7 @@ void MyCustomUARTComponent::loop() {
           }
         }
 
-        // Update binary sensors
+        // Update binary sensors 
         for (const auto &binary_sensor_info : this->binary_sensors_) {
           const char *json_key = binary_sensor_info.json_key.c_str();
           if (root.containsKey(json_key)) {
