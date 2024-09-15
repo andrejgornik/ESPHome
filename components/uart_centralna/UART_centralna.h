@@ -1,7 +1,7 @@
 #include "esphome/core/log.h"
 #include "UART_centralna.h"
 #include "esphome/components/json/json_util.h"
-#include "ArduinoJson.h"
+#include <ArduinoJson.h>  // Use the correct path to include ArduinoJson
 
 namespace esphome {
 namespace uart_centralna {
@@ -24,7 +24,7 @@ void MyCustomUARTComponent::loop() {
       }
 
       // Parse JSON
-      DynamicJsonDocument json_doc(1024);
+      StaticJsonDocument<1024> json_doc;  // Use StaticJsonDocument for memory safety on embedded devices
       auto error = deserializeJson(json_doc, json_str);
       if (error) {
         ESP_LOGW(TAG, "JSON parsing error: %s", error.c_str());
