@@ -15,8 +15,7 @@ void MyCustomUARTComponent::loop() {
 
     if (c == '\n') {
       ESP_LOGD(TAG, "Received: %s", buffer_.c_str());
-
-      // Check if the message has a leading '#' character and remove it
+      
       std::string json_str;
       if (buffer_.front() == '#') {
         json_str = buffer_.substr(1);  // Remove the '#' character
@@ -33,14 +32,30 @@ void MyCustomUARTComponent::loop() {
         JsonObject root = json_doc.as<JsonObject>();
         
         // Extract values and publish to sensors
-        for (auto *sensor : this->sensors_) {
+        for (auto *sensor : this->temperature_sensors_) {
           const char *name = sensor->get_name().c_str();
           if (root.containsKey(name)) {
-            float value = root[name].as<float>();  // Convert to float for numeric sensors
+            float value = root[name].as<float>();
             sensor->publish_state(value);
-            ESP_LOGD(TAG, "Published sensor: %s -> %f", name, value);
-          } else {
-            ESP_LOGD(TAG, "Key not found in JSON: %s", name);
+            ESP_LOGD(TAG, "Published temperature sensor: %s -> %f", name, value);
+          }
+        }
+
+        for (auto *sensor : this->power_sensors_) {
+          const char *name = sensor->get_name().c_str();
+          if (root.containsKey(name)) {
+            float value = root[name].as<float>();
+            sensor->publish_state(value);
+            ESP_LOGD(TAG, "Published power sensor: %s -> %f", name, value);
+          }
+        }
+
+        for (auto *sensor : this->text_sensors_) {
+          const char *name = sensor->get_name().c_str();
+          if (root.containsKey(name)) {
+            auto value = root[name];
+            sensor->publish_state(value.as<std::string>());
+            ESP_LOGD(TAG, "Published text sensor: %s -> %s", name, value.as<std::string>().c_str());
           }
         }
       }
