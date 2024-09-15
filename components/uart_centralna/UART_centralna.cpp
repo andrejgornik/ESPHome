@@ -15,30 +15,36 @@ void MyCustomUARTComponent::loop() {
 
     if (c == '\n') {
       ESP_LOGD(TAG, "Received: %s", buffer_.c_str());
-      // Check if the message has a leading '#' character and remove it
-      if (buffer_.front() == '#') {
-        std::string json_str = buffer_.substr(1);  // Remove the '#' character
-      } else {
-        std::string json_str = buffer_;  // Use the buffer as is
 
-        // Parse JSON
-        DynamicJsonDocument json_doc(1024);
-        auto error = deserializeJson(json_doc, json_str);
-        if (error) {
-          ESP_LOGW(TAG, "JSON parsing error: %s", error.c_str());
-        } else {
-          JsonObject root = json_doc.as<JsonObject>();
-          // Extract values and publish to sensors
-          for (auto *sensor : this->sensors_) {
-            const char *name = sensor->get_name().c_str();
-            if (root.containsKey(name)) {
-              float value = root[name].as<float>();  // Convert to float for numeric sensors
-              sensor->publish_state(value);
-              ESP_LOGD(TAG, "Published sensor: %s -> %f", name, value);
-            }
+      // Check if the message has a leading '#' character and remove it
+      std::string json_str;
+      if (buffer_.front() == '#') {
+        json_str = buffer_.substr(1);  // Remove the '#' character
+      } else {
+        json_str = buffer_;  // Use the buffer as is
+      }
+
+      // Parse JSON
+      DynamicJsonDocument json_doc(1024);
+      auto error = deserializeJson(json_doc, json_str);
+      if (error) {
+        ESP_LOGW(TAG, "JSON parsing error: %s", error.c_str());
+      } else {
+        JsonObject root = json_doc.as<JsonObject>();
+        
+        // Extract values and publish to sensors
+        for (auto *sensor : this->sensors_) {
+          const char *name = sensor->get_name().c_str();
+          if (root.containsKey(name)) {
+            float value = root[name].as<float>();  // Convert to float for numeric sensors
+            sensor->publish_state(value);
+            ESP_LOGD(TAG, "Published sensor: %s -> %f", name, value);
+          } else {
+            ESP_LOGD(TAG, "Key not found in JSON: %s", name);
           }
         }
       }
+
       buffer_.clear();  // Clear buffer for the next message
     }
   }
