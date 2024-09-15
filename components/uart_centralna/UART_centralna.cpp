@@ -28,14 +28,13 @@ void MyCustomUARTComponent::loop() {
           ESP_LOGW(TAG, "JSON parsing error: %s", error.c_str());
         } else {
           JsonObject root = json_doc.as<JsonObject>();
-          // Extract values and publish to text sensors
-          for (auto *sensor : this->text_sensors_) {
+          // Extract values and publish to sensors
+          for (auto *sensor : this->sensors_) {
             const char *name = sensor->get_name().c_str();
             if (root.containsKey(name)) {
-              auto value = root[name];
-              // Publish the sensor state (converted to a string)
-              sensor->publish_state(value.as<std::string>());
-              ESP_LOGD(TAG, "Published sensor: %s -> %s", name, value.as<std::string>().c_str());
+              float value = root[name].as<float>();  // Convert to float for numeric sensors
+              sensor->publish_state(value);
+              ESP_LOGD(TAG, "Published sensor: %s -> %f", name, value);
             }
           }
         }
