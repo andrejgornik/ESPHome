@@ -1,6 +1,6 @@
 #include "esphome/core/log.h"
 #include "UART_centralna.h"
-#include "esphome/json_util.h"
+#include "json_util.h"
 #include "ArduinoJson.h"
 
 namespace esphome {
