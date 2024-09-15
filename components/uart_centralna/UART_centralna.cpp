@@ -1,3 +1,4 @@
+// UART_centralna.cpp
 #include "esphome/core/log.h"
 #include "UART_centralna.h"
 #include "esphome/components/json/json_util.h"
@@ -15,20 +16,43 @@ void MyCustomUARTComponent::loop() {
 
     if (c == '\n') {
       ESP_LOGD(TAG, "Received: %s", buffer_.c_str());
-      
+
       // Parse JSON
-      DynamicJsonDocument json_doc(1024);
+      DynamicJsonDocument json_doc(2048);  // Increase size if needed
       auto error = deserializeJson(json_doc, buffer_);
       if (error) {
         ESP_LOGW(TAG, "JSON parsing error: %s", error.c_str());
       } else {
         JsonObject root = json_doc.as<JsonObject>();
+
+        // Update sensors
         for (const auto &sensor_info : this->sensors_) {
           const char *json_key = sensor_info.json_key.c_str();
           if (root.containsKey(json_key)) {
             float value = root[json_key].as<float>();
             sensor_info.sensor->publish_state(value);
             ESP_LOGD(TAG, "Published sensor: %s -> %.2f", json_key, value);
+          }
+        }
+
+        // Update text sensors
+        for (const auto &text_sensor_info : this->text_sensors_) {
+          const char *json_key = text_sensor_info.json_key.c_str();
+          if (root.containsKey(json_key)) {
+            const char *value = root[json_key].as<const char *>();
+            text_sensor_info.sensor->publish_state(value);
+            ESP_LOGD(TAG, "Published text sensor: %s -> %s", json_key, value);
+          }
+        }
+
+        // Update binary sensors
+        for (const auto &binary_sensor_info : this->binary_sensors_) {
+          const char *json_key = binary_sensor_info.json_key.c_str();
+          if (root.containsKey(json_key)) {
+            const char *value = root[json_key].as<const char *>();
+            bool state = (strcmp(value, "ON") == 0);
+            binary_sensor_info.sensor->publish_state(state);
+            ESP_LOGD(TAG, "Published binary sensor: %s -> %s", json_key, state ? "ON" : "OFF");
           }
         }
       }
@@ -59,4 +83,3 @@ void MyCustomUARTComponent::send_command(float desired_temp, float pid_power, bo
 
 }  // namespace uart_centralna
 }  // namespace esphome
- 
