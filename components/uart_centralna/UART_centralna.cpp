@@ -45,7 +45,7 @@ void MyCustomUARTComponent::loop() {
           }
         }
 
-        // Update binary sensors 
+        // Update binary sensors
         for (const auto &binary_sensor_info : this->binary_sensors_) {
           const char *json_key = binary_sensor_info.json_key.c_str();
           if (root.containsKey(json_key)) {
@@ -66,12 +66,12 @@ void MyCustomUARTComponent::dump_config() {
   ESP_LOGCONFIG(TAG, "UART Centralna Component");
 }
 
-void MyCustomUARTComponent::send_command(float desired_temp, float pid_power, bool tc_power) {
+void MyCustomUARTComponent::send_command(float desired_temp, int pid_power, bool tc_power) {
   std::string on_off_text = tc_power ? "ON" : "OFF";
 
   char send_json[256];
   snprintf(send_json, sizeof(send_json),
-           "{\"device\":\"raspberry\",\"desired_temperature\":%.2f,\"PID_power\":%.2f,\"TC_power\":\"%s\"}",
+           "{\"device\":\"raspberry\",\"desired_temperature\":%.2f,\"PID_power\":%d,\"TC_power\":\"%s\"}",
            desired_temp, pid_power, on_off_text.c_str());
 
   // Send over UART
