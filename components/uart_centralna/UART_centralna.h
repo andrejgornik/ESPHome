@@ -1,54 +1,91 @@
-#pragma once
-#include "esphome/core/component.h"
-#include "esphome/components/uart/uart.h"
-#include "esphome/components/sensor/sensor.h" // Include sensor
-#include "esphome/components/text_sensor/text_sensor.h"
+#include "esphome/core/log.h"
+#include "UART_centralna.h"
 #include "esphome/components/json/json_util.h"
+#include "ArduinoJson.h"
 
 namespace esphome {
 namespace uart_centralna {
 
-class MyCustomUARTComponent : public uart::UARTDevice, public Component {
- public:
-  MyCustomUARTComponent(esphome::uart::UARTComponent *parent) : uart::UARTDevice(parent) {}
+static const char *TAG = "uart_centralna";
 
-  void setup() override {}
-  void loop() override;
-  void dump_config() override;
+void MyCustomUARTComponent::loop() {
+  while (available()) {
+    char c = read();
+    buffer_ += c;
 
-  // Method to create and return temperature sensors
-  esphome::sensor::Sensor *create_temperature_sensor(const std::string &name) {
-    auto *sensor = new esphome::sensor::Sensor();
-    sensor->set_name(name.c_str());
-    temperature_sensors_.push_back(sensor);
-    return sensor;
+    if (c == '\n') {
+      ESP_LOGD(TAG, "Received: %s", buffer_.c_str());
+      // Check if the message has a leading '#' character and remove it
+      std::string json_str;
+      if (buffer_.front() == '#') {
+        json_str = buffer_.substr(1);  // Remove the '#' character
+      } else {
+        json_str = buffer_;  // Use the buffer as is
+      }
+
+      // Parse JSON
+      DynamicJsonDocument json_doc(1024);
+      auto error = deserializeJson(json_doc, json_str);
+      if (error) {
+        ESP_LOGW(TAG, "JSON parsing error: %s", error.c_str());
+      } else {
+        JsonObject root = json_doc.as<JsonObject>();
+        
+        // Extract values and publish to temperature sensors
+        for (auto *sensor : this->temperature_sensors_) {
+          const char *name = sensor->get_name().c_str();
+          if (root.containsKey(name)) {
+            float value = root[name].as<float>();
+            sensor->publish_state(value);
+            ESP_LOGD(TAG, "Published temperature sensor: %s -> %f", name, value);
+          }
+        }
+
+        // Extract values and publish to power sensors
+        for (auto *sensor : this->power_sensors_) {
+          const char *name = sensor->get_name().c_str();
+          if (root.containsKey(name)) {
+            float value = root[name].as<float>();
+            sensor->publish_state(value);
+            ESP_LOGD(TAG, "Published power sensor: %s -> %f", name, value);
+          }
+        }
+
+        // Extract values and publish to text sensors
+        for (auto *sensor : this->text_sensors_) {
+          const char *name = sensor->get_name().c_str();
+          if (root.containsKey(name)) {
+            auto value = root[name];
+            sensor->publish_state(value.as<std::string>());
+            ESP_LOGD(TAG, "Published text sensor: %s -> %s", name, value.as<std::string>().c_str());
+          }
+        }
+      }
+
+      buffer_.clear();  // Clear buffer for the next message
+    }
   }
+}
 
-  // Method to create and return power sensors
-  esphome::sensor::Sensor *create_power_sensor(const std::string &name) {
-    auto *sensor = new esphome::sensor::Sensor();
-    sensor->set_name(name.c_str());
-    power_sensors_.push_back(sensor);
-    return sensor;
-  }
+void MyCustomUARTComponent::dump_config() {
+  ESP_LOGCONFIG(TAG, "UART Centralna Component");
+}
 
-  // Method to create and return text sensors
-  esphome::text_sensor::TextSensor *create_text_sensor(const std::string &name) {
-    auto *sensor = new esphome::text_sensor::TextSensor();
-    sensor->set_name(name.c_str());
-    text_sensors_.push_back(sensor);
-    return sensor;
-  }
+void MyCustomUARTComponent::send_command(float desired_temp, float pid_power, bool tc_power) {
+  std::string on_off_text = tc_power ? "ON" : "OFF";
 
-  // Method to send command to the Arduino over UART
-  void send_command(float desired_temp, float pid_power, bool tc_power);
+  char send_json[256];
+  snprintf(send_json, sizeof(send_json),
+           "{\"device\":\"raspberry\",\"desired_temperature\":%.2f,\"PID_power\":%.2f,\"TC_power\":\"%s\"}",
+           desired_temp, pid_power, on_off_text.c_str());
 
- protected:
-  std::string buffer_;
-  std::vector<esphome::sensor::Sensor *> temperature_sensors_;
-  std::vector<esphome::sensor::Sensor *> power_sensors_;
-  std::vector<esphome::text_sensor::TextSensor *> text_sensors_;
-};
+  // Send over UART
+  //this->write_str("#");  // Add '#' to the beginning of the message if required by the receiving system
+  this->write_str(send_json);
+  this->write_str("\n");
+
+  ESP_LOGD(TAG, "Sent command: %s", send_json);
+}
 
 }  // namespace uart_centralna
 }  // namespace esphome
