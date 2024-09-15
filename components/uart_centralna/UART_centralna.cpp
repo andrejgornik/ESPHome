@@ -32,7 +32,7 @@ void MyCustomUARTComponent::loop() {
       } else {
         JsonObject root = json_doc.as<JsonObject>();
         
-        // Extract values and publish to sensors
+        // Extract values and publish to temperature sensors
         for (auto *sensor : this->temperature_sensors_) {
           const char *name = sensor->get_name().c_str();
           if (root.containsKey(name)) {
@@ -42,6 +42,7 @@ void MyCustomUARTComponent::loop() {
           }
         }
 
+        // Extract values and publish to power sensors
         for (auto *sensor : this->power_sensors_) {
           const char *name = sensor->get_name().c_str();
           if (root.containsKey(name)) {
@@ -51,6 +52,7 @@ void MyCustomUARTComponent::loop() {
           }
         }
 
+        // Extract values and publish to text sensors
         for (auto *sensor : this->text_sensors_) {
           const char *name = sensor->get_name().c_str();
           if (root.containsKey(name)) {

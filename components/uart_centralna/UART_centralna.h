@@ -1,5 +1,4 @@
-#pragma once  // Use #pragma once to prevent multiple inclusions
-
+#pragma once
 #include "esphome/core/component.h"
 #include "esphome/components/uart/uart.h"
 #include "esphome/components/sensor/sensor.h"
