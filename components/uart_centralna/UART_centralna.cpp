@@ -15,9 +15,11 @@ void MyCustomUARTComponent::loop() {
 
     if (c == '\n') {
       ESP_LOGD(TAG, "Received: %s", buffer_.c_str());
-      // Check for leading '#' character and remove it
+      // Check if the message has a leading '#' character and remove it
       if (buffer_.front() == '#') {
         std::string json_str = buffer_.substr(1);  // Remove the '#' character
+      } else {
+        std::string json_str = buffer_;  // Use the buffer as is
 
         // Parse JSON
         DynamicJsonDocument json_doc(1024);
