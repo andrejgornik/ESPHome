@@ -1,8 +1,7 @@
 #include "esphome/core/log.h"
 #include "UART_centralna.h"
-#include "esphome/core/hal.h"
-#include "esphome/core/application.h"
-#include "esphome/core/json.h"
+#include "esphome/json_util.h"
+#include "ArduinoJson.h"
 
 namespace esphome {
 namespace uart_centralna {
@@ -20,22 +19,18 @@ void MyCustomUARTComponent::loop() {
       if (buffer_.front() == '#') {
         std::string json_str = buffer_.substr(1);  // Remove the '#' character
         // Parse JSON
-        esphome::DynamicJsonDocument json_doc(1024);
-        auto error = esphome::json::parse_json(json_str, json_doc);
-        if (error != esphome::json::JSON_PARSE_OK) {
-          ESP_LOGW(TAG, "JSON parsing error");
+        DynamicJsonDocument json_doc(1024);
+        auto error = deserializeJson(json_doc, json_str);
+        if (error) {
+          ESP_LOGW(TAG, "JSON parsing error: %s", error.c_str());
         } else {
-          if (!json_doc.is<ArduinoJson::JsonObject>()) {
-            ESP_LOGW(TAG, "Parsed JSON is not an object");
-          } else {
-            auto root = json_doc.as<ArduinoJson::JsonObject>();
-            // Extract values and publish to text sensors
-            for (auto *sensor : this->text_sensors_) {
-              const char *name = sensor->get_name().c_str();
-              if (root.containsKey(name)) {
-                auto value = root[name];
-                sensor->publish_state(value.as<std::string>());
-              }
+          JsonObject root = json_doc.as<JsonObject>();
+          // Extract values and publish to text sensors
+          for (auto *sensor : this->text_sensors_) {
+            const char *name = sensor->get_name().c_str();
+            if (root.containsKey(name)) {
+              auto value = root[name];
+              sensor->publish_state(value.as<std::string>());
             }
           }
         }
