@@ -80,7 +80,7 @@ void MyCustomUARTComponent::send_command(float desired_temp, float pid_power, bo
            desired_temp, pid_power, on_off_text.c_str());
 
   // Send over UART
-  this->write_str("#");  // Add '#' to the beginning of the message if required by the receiving system
+  //this->write_str("#");  // Add '#' to the beginning of the message if required by the receiving system
   this->write_str(send_json);
   this->write_str("\n");
 
