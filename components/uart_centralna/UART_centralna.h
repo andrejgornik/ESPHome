@@ -1,11 +1,16 @@
-// UART_centralna.h
 #pragma once
 #include "esphome/core/component.h"
 #include "esphome/components/uart/uart.h"
 #include "esphome/components/sensor/sensor.h"  // Include the sensor component
+#include <vector>
 
 namespace esphome {
 namespace uart_centralna {
+
+struct SensorInfo {
+  esphome::sensor::Sensor *sensor;
+  std::string json_key;
+};
 
 class MyCustomUARTComponent : public uart::UARTDevice, public Component {
  public:
@@ -16,17 +21,10 @@ class MyCustomUARTComponent : public uart::UARTDevice, public Component {
   void dump_config() override;
 
   // Method to create and return sensor objects
-  esphome::sensor::Sensor *create_temperature_sensor(const std::string &name) {
+  esphome::sensor::Sensor *create_sensor(const std::string &json_key, const std::string &display_name) {
     auto *sensor = new esphome::sensor::Sensor();
-    sensor->set_name(name.c_str());
-    sensors_.push_back(sensor);
-    return sensor;
-  }
-
-  esphome::sensor::Sensor *create_power_sensor(const std::string &name) {
-    auto *sensor = new esphome::sensor::Sensor();
-    sensor->set_name(name.c_str());
-    sensors_.push_back(sensor);
+    sensor->set_name(display_name.c_str());
+    sensors_.push_back({sensor, json_key});
     return sensor;
   }
 
@@ -35,7 +33,7 @@ class MyCustomUARTComponent : public uart::UARTDevice, public Component {
 
  protected:
   std::string buffer_;
-  std::vector<esphome::sensor::Sensor *> sensors_;
+  std::vector<SensorInfo> sensors_;
 };
 
 }  // namespace uart_centralna

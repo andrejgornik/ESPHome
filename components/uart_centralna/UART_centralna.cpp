@@ -1,4 +1,3 @@
-// UART_centralna.cpp
 #include "esphome/core/log.h"
 #include "UART_centralna.h"
 #include "esphome/components/json/json_util.h"
@@ -24,12 +23,12 @@ void MyCustomUARTComponent::loop() {
         ESP_LOGW(TAG, "JSON parsing error: %s", error.c_str());
       } else {
         JsonObject root = json_doc.as<JsonObject>();
-        for (auto *sensor : this->sensors_) {
-          const char *name = sensor->get_name().c_str();
-          if (root.containsKey(name)) {
-            float value = root[name].as<float>();
-            sensor->publish_state(value);
-            ESP_LOGD(TAG, "Published sensor: %s -> %.2f", name, value);
+        for (const auto &sensor_info : this->sensors_) {
+          const char *json_key = sensor_info.json_key.c_str();
+          if (root.containsKey(json_key)) {
+            float value = root[json_key].as<float>();
+            sensor_info.sensor->publish_state(value);
+            ESP_LOGD(TAG, "Published sensor: %s -> %.2f", json_key, value);
           }
         }
       }
@@ -52,7 +51,6 @@ void MyCustomUARTComponent::send_command(float desired_temp, float pid_power, bo
            desired_temp, pid_power, on_off_text.c_str());
 
   // Send over UART
-  //this->write_str("#");  // Add '#' to the beginning of the message if required by the receiving system
   this->write_str(send_json);
   this->write_str("\n");
 
