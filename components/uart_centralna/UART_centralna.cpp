@@ -30,6 +30,19 @@ void MyCustomUARTComponent::loop() {
           const char *json_key = sensor_info.json_key.c_str();
           if (root.containsKey(json_key)) {
             float value = root[json_key].as<float>();
+
+            // Check if the sensor is 'power_usage'
+            if (strcmp(json_key, "power_usage") == 0) {
+              // If power_usage is below 1.15A, set it to 0
+              if (value < 1.15f) {
+                value = 0.0f;
+              } else {
+              // Convert from Amperes to Watts
+                float voltage = 240.0f;  // Adjust the voltage value as needed
+              value = value * voltage;
+            }
+            }
+
             sensor_info.sensor->publish_state(value);
             ESP_LOGD(TAG, "Published sensor: %s -> %.2f", json_key, value);
           }
